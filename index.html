@@ -5,6 +5,7 @@
     <title>CONTACT US Crown Switch</title>
     <link href="css/form.css" rel="stylesheet" type="text/css">
     <script src="js/validation.js"></script>
+    <script src="js/contact-reason.js" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -112,25 +113,30 @@
                         </div>
                     </div>
                 </div>
+                <!-- Groups and options are injected from CONTACT_REASONS in
+                     js/contact-reason.js. This select carries no name: the hidden
+                     inputs below are what gets posted, so a single visible choice
+                     fills both the reason and sub-issue fields. -->
                 <div class="zf-tempFrmWrapper  zf-large ">
-                    <label class="zf-labelName">
+                    <label class="zf-labelName" for="cs-reasonSelect">
                         Reason for Contact:
                         <em class="zf-important"> *</em>
                     </label>
                     <div class="zf-tempContDiv">
-                        <select class="zf-form-sBox" name="Dropdown" checktype="c1">
-                            <option value="">Select</option>
-                            <option value="Become a Wholesaler/Retailer">Become a Wholesaler/Retailer</option>
-                            <option value="General Support">General Support</option>
-                            <option value="Device Support">Device Support</option>
-                            <option value="Pods Support">Pods Support</option>
-                            <option value="Brand Partnerships">Brand Partnerships</option>
-                            <option value="Website Feedback">Website Feedback</option>
+                        <select class="zf-form-sBox cs-reasonSelect" id="cs-reasonSelect" aria-required="true"
+                            aria-describedby="Dropdown_error">
+                            <option selected="true" value="-Select-"></option>
                         </select>
-                        <p id="Dropdown_error" class="zf-errorMessage" style="display:none;">Invalid value</p>
+                        <p id="Dropdown_error" class="zf-errorMessage" style="display:none;">Please select a reason for contact.</p>
                     </div>
                     <div class="zf-clearBoth"></div>
                 </div>
+                <input type="hidden" id="Dropdown" name="Dropdown" value="">
+                <input type="hidden" id="Dropdown2" name="Dropdown2" value="">
+                <input type="hidden" id="reasonId" name="reasonId" value="">
+                <input type="hidden" id="reasonLabel" name="reasonLabel" value="">
+                <input type="hidden" id="subIssueId" name="subIssueId" value="">
+                <input type="hidden" id="subIssueLabel" name="subIssueLabel" value="">
                 <div class="zf-tempFrmWrapper  zf-large" id="Sub">
                     <label class="zf-labelName">
                         Subject
@@ -160,7 +166,7 @@
                 </ul>
             </div>
             <ul>
-                <li class="zf-fmFooter"><button class="zf-submitColor" type="submit">Submit</button></li>
+                <li class="zf-fmFooter"><button class="zf-submitColor" type="submit" id="cs-submit" disabled>Submit</button></li>
             </ul>
             
     </div>
@@ -219,11 +225,11 @@
                     }
                 },
                 Dropdown: {
-                    el: $('[name="Dropdown"]'),
+                    el: document.getElementById('cs-reasonSelect'),
                     err: document.getElementById('Dropdown_error'),
                     required: true,
                     validate: function (value) {
-                        if (!value || value === '-Select-') return 'Please select an option.';
+                        if (!value || value === '-Select-') return 'Please select a reason for contact.';
                         return '';
                     }
                 },
@@ -299,7 +305,9 @@
 
             // Override the original zf_ValidateAndSubmit function if it exists
             window.zf_ValidateAndSubmit = function() {
-                return validateAllRequired();
+                var fieldsOk = validateAllRequired();
+                var reasonOk = !window.CrownSwitchContactReason || window.CrownSwitchContactReason.validate();
+                return fieldsOk && reasonOk;
             };
 
             form.addEventListener('submit', function (event) {
